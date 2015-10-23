@@ -3,7 +3,7 @@ Lastwall risk-based authentication module for Node.js
 
 ## Overview
 
-This document describes the bare-bones API. For integration documentation, please read [this document](Integration.md).
+This document describes the bare-bones API. For integration documentation, please [click here](Integration.md).
 
 
 ## API Calls
