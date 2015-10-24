@@ -105,7 +105,7 @@ Another snippet from `app.js`. Loads the followup page after initial login to ru
     };
 ```
 
-On RISC completion, do the following (**step 6**):
+On RISC completion, check the score. If failed, log the user out. If passed, redirect to `/account` (**step 6**):
 
 ```
     app.post('/finishedRisc', ensureUserPass, finishedRisc);
