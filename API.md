@@ -138,7 +138,8 @@ Retrieves the status of an existing RISC session.
 - **duration** - Total duration of the session thus far, in seconds    
 - **active** - Boolean value indicating whether the session is still active or has been closed     
 - **status** - String value indicating session status. Will be "Pending" until the session is resolved    
-- **authenticated** - Boolean value indicating the final result of the authentication session once it is resolved    
+- **authenticated** - Boolean value indicating whether the session was resolved with high confidence    
+- **risky** - Boolean value indicating whether the session was resolved with mid-range confidence    
 - **score** - The evaluated risk score as a percentage (0-100). Included in the result only if the session has been resolved.    
 
 
