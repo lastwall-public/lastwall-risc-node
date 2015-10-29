@@ -13,7 +13,7 @@ For bare-bones API documentation, please [click here](API.md).
 
 ## Initialization
 
-Fill in your own token/secret here:
+First, import our NPM module `lastwall-risc-node`, then fill in your own token/secret here:
 
 ```
 var riscOptions =
