@@ -13,6 +13,8 @@ For bare-bones API documentation, please [click here](API.md).
 
 ## Initialization
 
+Fill in your own token/secret here:
+
 ```
 var riscOptions =
 {
