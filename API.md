@@ -1,6 +1,6 @@
 # ![Lastwall Logo](logo.png) Lastwall RISC API
 
-Lastwall risk-based authentication API for Node.js
+Lastwall risk-based authentication API
 
 ## Overview
 
