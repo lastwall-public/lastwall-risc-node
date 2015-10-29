@@ -172,10 +172,10 @@ RiscAccessor.prototype.rest = function(functionName, method, params, onOk, onErr
 
 	if (!this.isInitialized)
 	{
-		onError('Lastwall API Accessor has not been initialized!');
+		this.output.error('Lastwall API Accessor has not been initialized!');
 		return;
 	}
-	if (!params)
+	if (!reqParams)
 	{
 		onError('No request parameters specified!');
 		return;
@@ -184,7 +184,7 @@ RiscAccessor.prototype.rest = function(functionName, method, params, onOk, onErr
 	var getUrl = function()
 	{
 		var protocol = that.use_https ? 'https' : 'http';
-		return protocol + '://' + host + ':' + port + '/';
+		return protocol + '://' + host + '/';
 	}
 
 	var getKeys = function(obj)
@@ -200,7 +200,6 @@ RiscAccessor.prototype.rest = function(functionName, method, params, onOk, onErr
 
 	var createGuid = function()
 	{
-		// Try to create a crypto-secure random guid
 		try {
 			var buf = crypto.randomBytes(16);
 			var i = 0;
@@ -214,7 +213,6 @@ RiscAccessor.prototype.rest = function(functionName, method, params, onOk, onErr
 				i++;
 				return v.toString(16);
 			});
-		// If that fails, use Math.random()
 		} catch (ex) {
 			if (verbose)
 				this.output.error('Error generating crypto-secure random guid. Resorting to pseudo-random: ' + ex);
@@ -226,47 +224,58 @@ RiscAccessor.prototype.rest = function(functionName, method, params, onOk, onErr
 		}
 	}
 
+	var reqBody = '';
 	var headers = {};
 	var path = functionName;
 	if (path[0] != '/')
 		path = '/' + path;
 	var url = getUrl() + functionName;
-	var securityModel = 'basic';
 
 	if (this.http_basic_auth)
 	{
 		var authString = 'Basic ' + new Buffer(this.token + ':' + this.secret).toString('base64');
 
+		outputString = 'insecure), params: ' + getKeys(reqParams);
+
+		reqBody = qs.stringify(reqParams);
 		headers = {
 			'Authorization' : authString,
 			'Content-Type'  : 'application/x-www-form-urlencoded',
+			'Content-Length': reqBody.length
 		};
 	}
 	else
 	{
-		securityModel = 'digest';
+		if (!reqParams)
+			reqParams = {};
 
+		var alg = 'sha1';
 		var request_id = createGuid();
 		var timestamp = Math.floor((new Date()).getTime() / 1000).toString();
 
-		var hmac = crypto.createHmac('sha1', this.secret);
+		var hmac = crypto.createHmac(alg, this.secret);
 		var hash_str = url + request_id + timestamp;
 		hmac.update(hash_str);
-		var signature = hmac.digest('base64');
+		var hash = hmac.digest('base64');
 
+		outputString = 'secure), params: ' + getKeys(reqParams);
+
+		reqBody = qs.stringify(reqParams);
 		headers = {
 			'Content-Type'    : 'application/x-www-form-urlencoded',
+			'Content-Length'  : reqBody.length,
 			'X-Lastwall-Token'      : this.token,
 			'X-Lastwall-Timestamp'  : timestamp,
 			'X-Lastwall-Request-Id' : request_id,
-			'X-Lastwall-Signature'  : signature
+			'X-Lastwall-Signature'  : hash
 		};
 	}
 
 	if (verbose)
 	{
-		this.output.info('Calling \'' + method + ' ' + url + '\' (' + securityModel + '), params: ' + getKeys(params));
+		this.output.info('Calling \'' + method + ' ' + url + '\' (' + outputString);
 	}
+
 
 	var callback = function(response)
 	{
@@ -278,7 +287,7 @@ RiscAccessor.prototype.rest = function(functionName, method, params, onOk, onErr
 			var code = response.statusCode;
 			var mess = 'Received API response for \'' + method + ' ' + url + '\': response code ' + code;
 
-			if (code >= 200 && code < 400)
+			if (code >= 200 && code < 300)
 			{
 				if (verbose)
 					that.output.success(mess);
@@ -301,27 +310,39 @@ RiscAccessor.prototype.rest = function(functionName, method, params, onOk, onErr
 
 				if (verbose)
 					that.output.error(mess + ', error: ' + error);
-				onError(code + ': ' + error, code);
+				onError(code + ': ' + error);
 			}
 		});
 	};
 
-	var reqBody = qs.stringify(params);
-	headers['Content-Length'] = reqBody.length;
-
-	var options = {
-		host : host,
-		port : port,
-		path : '/' + functionName,
-		method : method,
-		headers : headers
-	}
-
 	var request;
-	if (that.use_https)
+	if (this.use_https)
+	{
+		var options = {
+			host : host,
+			port : port,
+			path : '/' + functionName,
+			method : method,
+			headers : headers,
+			rejectUnauthorized: false,
+			requestCert: true,
+			agent: false
+		}
+
 		request = https.request(options, callback);
+	}
 	else
+	{
+		var options = {
+			host : host,
+			port : port,
+			path : '/' + functionName,
+			method : method,
+			headers : headers
+		}
+
 		request = http.request(options, callback);
+	}
 
 	var didTimeout = false;
 	request.on('socket', function (socket) {
@@ -345,7 +366,7 @@ RiscAccessor.prototype.rest = function(functionName, method, params, onOk, onErr
 		onError(mess);
 	});
 
-	if (params)
+	if (reqParams)
 		request.write(reqBody);
 	request.end();
 };
