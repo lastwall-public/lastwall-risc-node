@@ -15,20 +15,6 @@ var RiscAccessor = function(opts)
 	this.token = opts.token;
 	this.secret = opts.secret;
 
-	if (!this.token)
-		return output.error('No API token specified');
-	if (!this.secret)
-		return output.error('No API secret specified');
-
-	this.http_basic_auth = (opts.http_basic_auth == true) ? true : false; // default to false
-	this.verbose = (opts.verbose == true) ? true : false; // default to false
-	this.use_https = (opts.https == false) ? false : true; // default to true
-
-	this.host = opts.host || 'risc.lastwall.com';
-	this.port = opts.port || (this.use_https ? 443 : 80);
-
-	this.timeout = opts.timeout || 5000;
-
 	this.output = {
 		red: '\033[31m',
 		yellow: '\033[33m',
@@ -58,6 +44,20 @@ var RiscAccessor = function(opts)
 		}
 	}
 
+	if (!this.token)
+		return this.output.error('No API token specified');
+	if (!this.secret)
+		return this.output.error('No API secret specified');
+
+	this.http_basic_auth = (opts.http_basic_auth == true) ? true : false; // default to false
+	this.verbose = (opts.verbose == true) ? true : false; // default to false
+	this.use_https = (opts.https == false) ? false : true; // default to true
+
+	this.host = opts.host || 'risc.lastwall.com';
+	this.port = opts.port || (this.use_https ? 443 : 80);
+
+	this.timeout = opts.timeout || 5000;
+
 	if (opts.output && opts.output.info && opts.output.error && opts.output.success && opts.output.warn)
 	{
 		this.output = opts.output;
@@ -67,34 +67,28 @@ var RiscAccessor = function(opts)
 }
 
 
-RiscAccessor.prototype.createUser = function(user_id, email, phone, options, onOk, onError)
+RiscAccessor.prototype.verifyApiKey = function(onOk, onError)
+{
+	this.rest('api/verify', 'get', {}, onOk, onError);
+}
+
+
+RiscAccessor.prototype.createUser = function(user_id, user_name, email, phone, onOk, onError)
 {
 	if (!user_id)
 		onError('No user ID specified');
-	if (!email)
+	else if (!email)
 		onError('No email address specified');
-	if (!phone)
-		onError('No phone number specified');
 	else
 	{
 		var params = {
 			'user_id' : user_id,
+			'name': user_name,
 			'email' : email,
 			'phone' : phone
 		};
-		if (options)
-		{
-			if (options.name)
-				params['name'] = options.name;
-		}
 		this.rest('api/users', 'post', params, onOk, onError);
 	}
-}
-
-
-RiscAccessor.prototype.verifyApiKey = function(onOk, onError)
-{
-	this.rest('api/verify', 'get', {}, onOk, onError);
 }
 
 
