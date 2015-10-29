@@ -163,7 +163,7 @@ RiscAccessor.prototype.getSession = function(session_id, onOk, onError)
 }
 
 
-RiscAccessor.prototype.rest = function(functionName, method, params, onOk, onError)
+RiscAccessor.prototype.rest = function(functionName, method, reqParams, onOk, onError)
 {
 	var verbose = this.verbose;
 	var that = this;
