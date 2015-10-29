@@ -158,6 +158,7 @@ Retrieves the status of an existing RISC session.
     "active": false,
     "status": "Authenticated",
     "authenticated": true,
+    "risky": false,
     "score": 95.2
 }
 ```
