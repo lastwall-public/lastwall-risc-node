@@ -20,7 +20,7 @@ var riscOptions =
     secret: '2B60355A24C907761DA3B09C7B8794C7F9B8BE1D70D2488C36CAF85E37DB2C',
     verbose: true
 }
-var RiscAccessor = require('lastwall-risc');
+var RiscAccessor = require('lastwall-risc-node');
 RiscAccessor.initialize(riscOptions);
 ```
 
