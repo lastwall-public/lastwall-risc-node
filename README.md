@@ -46,6 +46,7 @@ RiscAccessor.verifyApiKey(onOk, onError);
 ```
 var onOk = function(result)
 {
+    // Store the RISC session ID and the session javascript URL in the local session.
     session.riscSessionId = result.session_id;
     session.riscSessionUrl = result.session_url;
 }
@@ -53,6 +54,7 @@ var onError = function(err)
 {
     console.log('Error creating Risc session: ' + err);
 }
+// Create a RISC session for the given user's ID
 RiscAccessor.createSession(user.id, onOk, onError);   
 ```
 
@@ -80,5 +82,6 @@ var onError = function(err)
 {
     console.log('Error reading Risc session: ' + err);
 }
+// Use the RISC session ID that we saved earlier
 RiscAccessor.getSession(session.riscSessionId, onOk, onError); 
 ```
