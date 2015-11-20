@@ -58,7 +58,7 @@ Snippet from `login.ejs` to run the client-side javascript (**step 2**):
         // Get the username from the login form, and use it to construct the script URL.
         var username = document.getElementById('usernametext').value;
         // Pull the base RISC url from an EJS variable and append the username to get the full script URL.
-        var script_url = '<%= risc_url %>' + '/' + encodeURIComponent(username);
+        var script_url = '<%= risc_url %>' + encodeURIComponent(username);
         // The risc_url varible should look like this:   https://risc.lastwall.com/risc/script/API_TOKEN
         // The final script url will look like this:     https://risc.lastwall.com/risc/script/API_TOKEN/USER_ID
         loadRiscScript(script_url);
