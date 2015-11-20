@@ -80,90 +80,29 @@ For all failed API calls (codes 400, 401, or 500), the result will be:
 
 ---------------------------------------
 
-## POST - /sessions
+## GET - /validate
 
-Create an authentication session for a registered user. If there is no user registered with the given ID, a new user account will be automatically created.
+Validates a decrypted RISC score to ensure it hasn't been modified. This provides optional extra protection against the risk of your API secret being compromised.
+
 
 #### Required Parameters
-- **user_id** - The unique ID of the user to create the session for.    
+- **snapshot_id** - The unique snapshot ID
+- **browser_id** - The unique browser ID
+- **date** - The Javascript-formatted (ISO 8601) date/time of the session
+- **score** - The resulting RISC score
+- **status** - The snapshot status - passed, risky, or failed
 
 
 #### Return Values
 
-- **session_id** - ID of current authentication session. Must be kept to query the session later on    
-- **user_id** - The specified user ID for the session    
-- **session_url** - The url of the session javascript, to be loaded asynchronously from the end user's browser    
-- **start** - The time and date when the session was created    
-- **duration** - Total duration of the session thus far, in seconds    
-- **active** - Boolean value indicating whether the session is still active or has been closed     
-- **status** - String value indicating session status. Will be "Pending" until the session is resolved    
+- **status** - String 'OK' or 'Error'. If it's an error, the specific message is included in the 'error' return value.
+- **error** - Undefined or specific error message.
 
 
 ### Examples
 
-**Request:** `curl -X POST -H "(headers)" "https://risc.lastwall.com/api/sessions" -d '{"user_id":"tester"}'"`    
+**Request:** `curl -X POST -H "(headers)" "https://risc.lastwall.com/api/validate" -d '{"snapshot_id":"(some guid)", "score":...}'"`    
 
-**Response:** `HTTP/1.1 200 OK`    
-```
-{
-    "session_id": "LWRA053866F136D55AE9960F7FA7C27A45B4650BAA51FF6C762",
-    "user_id": "tester",
-    "session_url": "https://ss1.lastwall.com/session/LWRA053866F136D55AE9960F7FA7C27A45B4650BAA51FF6C762",
-    "start": "2015-08-10T21:37:41.065Z",
-    "duration": 0.007,
-    "active": true,
-    "status": "Pending"
-}
-```
-
-
+**Response:** `HTTP/1.1 200 OK`    `{ "status": "OK" }`
 
 ---------------------------------------
-
-## GET - /sessions
-
-Retrieves the status of an existing RISC session.
-
-
-#### Required Parameters
-- **session_id** - Session ID being inquired about.
-
-
-#### Return Values
-
-- **session_id** - ID of current authentication session
-- **user_id** - The user ID for the session    
-- **session_url** - The url of the session javascript    
-- **start** - The time and date when the session was created    
-- **duration** - Total duration of the session thus far, in seconds    
-- **active** - Boolean value indicating whether the session is still active or has been closed     
-- **status** - String value indicating session status. Will be "Pending" until the session is resolved    
-- **authenticated** - Boolean value indicating whether the session was resolved with high confidence    
-- **risky** - Boolean value indicating whether the session was resolved with mid-range confidence    
-- **score** - The evaluated risk score as a percentage (0-100). Included in the result only if the session has been resolved.    
-
-
-### Examples
-
-**Request:** `curl -X GET -H "(headers)" "https://risc.lastwall.com/api/sessions" -d '{"session_id":"LWRA053866F136D55AE9960F7FA7C27A45B4650BAA51FF6C762"}'"`    
-
-**Response:** `HTTP/1.1 200 OK`
-```
-{
-    "session_id": "LWRA053866F136D55AE9960F7FA7C27A45B4650BAA51FF6C762",
-    "user_id": "tester",
-    "session_url": "https://ss1.lastwall.com/session/LWRA053866F136D55AE9960F7FA7C27A45B4650BAA51FF6C762",
-    "start": "2015-02-07T21:37:41.065Z",
-    "duration": 33.044,
-    "active": false,
-    "status": "Authenticated",
-    "authenticated": true,
-    "risky": false,
-    "score": 95.2
-}
-```
-
-**Request:** `curl -X GET -H "(headers)" "https://risc.lastwall.com/api/sessions"`    
-
-**Response:** `HTTP/1.1 400 Bad Request` `{ "error": "No session ID specified" }`
-

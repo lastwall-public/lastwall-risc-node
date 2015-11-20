@@ -48,6 +48,10 @@ var RiscAccessor = function(opts)
 		return this.output.error('No API token specified');
 	if (!this.secret)
 		return this.output.error('No API secret specified');
+	if (this.token.length < 67)
+		return this.output.error('Invalid API token specified');
+	if (this.secret.length < 64)
+		return this.output.error('Invalid API secret specified');
 
 	this.http_basic_auth = (opts.http_basic_auth == true) ? true : false; // default to false
 	this.verbose = (opts.verbose == true) ? true : false; // default to false
@@ -73,92 +77,82 @@ RiscAccessor.prototype.verifyApiKey = function(onOk, onError)
 }
 
 
-RiscAccessor.prototype.createUser = function(user_id, user_name, email, phone, onOk, onError)
+RiscAccessor.prototype.getScriptUrl = function()
 {
-	if (!user_id)
-		onError('No user ID specified');
-	else if (!email)
-		onError('No email address specified');
+	if (!this.isInitialized)
+	{
+		this.output.error('Lastwall API Accessor has not been initialized!');
+		return;
+	}
+
+	var protocol = this.use_https ? 'https' : 'http';
+	return protocol + '://' + this.host + ':' + this.port + '/risc/script/' + this.token;
+}
+
+
+RiscAccessor.prototype.decryptSnapshot = function(riscstring)
+{
+	if (!this.isInitialized)
+	{
+		this.output.error('Lastwall API Accessor has not been initialized!');
+		return;
+	}
+
+	var result = JSON.parse(riscstring);
+	try
+	{
+		var dec_secret = (this.secret + this.secret).substr(result.ix, 32);
+		var decipher = crypto.createDecipheriv('aes-128-cbc', new Buffer(dec_secret, 'hex'), new Buffer(result.iv, 'hex'));
+		var dec = decipher.update(result.data, 'base64', 'utf8');
+		dec += decipher.final('utf8');
+		var ret = JSON.parse(dec);
+
+		// Make sure date is accurate within 10 minutes
+		var datediff = Math.abs(new Date(ret.date) - new Date()) / 1000;
+		if (datediff > 600)
+		{
+			this.output.error('Result is too far out of date.');
+			return null;
+		}
+
+		ret.risky = (ret.status == 'risky');
+		ret.passed = (ret.status == 'passed');
+		ret.failed = (ret.status == 'failed');
+		return ret;
+	}
+	catch (e)
+	{
+		this.output.error('Unable to decrypt snapshot data: ' + e);
+		return null;
+	}
+}
+
+
+RiscAccessor.prototype.validateSnapshot = function(result, onOk, onError)
+{
+	if (!this.isInitialized)
+	{
+		this.output.error('Lastwall API Accessor has not been initialized!');
+		return;
+	}
+
+	if (!result || !result.snapshot_id || !result.browser_id || !result.date || !result.score || !result.status)
+		onError('The given object is not a valid RISC snapshot result');
 	else
 	{
 		var params = {
-			'user_id' : user_id,
-			'name': user_name,
-			'email' : email,
-			'phone' : phone
+			snapshot_id : result.snapshot_id,
+			browser_id : result.browser_id,
+			date : result.date,
+			score: result.score,
+			status: result.status
 		};
-		this.rest('api/users', 'post', params, onOk, onError);
-	}
-}
-
-
-RiscAccessor.prototype.getUser = function(user_id, onOk, onError)
-{
-	if (!user_id)
-		onError('No user ID specified');
-	else
-	{
-		var params = { 'user_id' : user_id };
-		this.rest('api/users', 'get', params, onOk, onError);
-	}
-}
-
-
-RiscAccessor.prototype.modifyUser = function(user_id, options, onOk, onError)
-{
-	if (!user_id)
-		onError('No user ID specified');
-	else if (!options)
-		onError('No user options specified');
-	else
-	{
-		var params = { 'user_id' : user_id };
-		if (options)
+		var resultOk = function(status)
 		{
-			if (options.email)
-				params['email'] = options.email;
-			if (options.phone)
-				params['phone'] = options.phone;
-			if (options.name)
-				params['name'] = options.name;
+			// status is just a useless {'status':'OK'}. Call onOk() with the original RISC result instead.
+			onOk(result);
 		}
-		this.rest('api/users', 'put', params, onOk, onError);
-	}
-}
-
-
-RiscAccessor.prototype.deleteUser = function(user_id, onOk, onError)
-{
-	if (!user_id)
-		onError('No user ID specified');
-	else
-	{
-		var params = { 'user_id' : user_id };
-		this.rest('api/users', 'delete', params, onOk, onError);
-	}
-}
-
-
-RiscAccessor.prototype.createSession = function(user_id, onOk, onError)
-{
-	if (!user_id)
-		onError('No user ID specified');
-	else
-	{
-		var params = { 'user_id' : user_id };
-		this.rest('api/sessions', 'post', params, onOk, onError);
-	}
-}
-
-
-RiscAccessor.prototype.getSession = function(session_id, onOk, onError)
-{
-	if (!session_id)
-		onError('No session ID specified');
-	else
-	{
-		var params = { 'session_id' : session_id };
-		this.rest('api/sessions', 'get', params, onOk, onError);
+		this.rest('api/validate', 'get', params, resultOk, onError);
 	}
 }
 
