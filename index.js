@@ -136,7 +136,7 @@ RiscAccessor.prototype.validateSnapshot = function(result, onOk, onError)
 		return;
 	}
 
-	if (!result || !result.snapshot_id || !result.browser_id || !result.date || !result.score || !result.status)
+	if (!result || !result.snapshot_id || !result.browser_id || !result.date || (!result.score && result.score != 0) || !result.status)
 		onError('The given object is not a valid RISC snapshot result');
 	else
 	{
