@@ -31,10 +31,13 @@ var RiscAccessor = require('lastwall-risc-node')(riscOptions);
 Our javascript requires both a public API token and a user ID in the URL. The specific format is `https://risc.lastwall.com/risc/script/API_TOKEN/USER_ID`. To construct this URL, we provide a convenient shortcut function in our Node module. You can do it like this:
 
 ```
-// Get the base url for the script. This string still needs the username appended to the end.
+// (SERVER-SIDE) Get the base url for the script. This string still needs the username appended to the end.
 var base_url = RiscAccessor.getScriptUrl();
 // base_url looks like this: https://risc.lastwall.com/risc/script/API_TOKEN/
-// Username can be appended on the client side or the server side, wherever it is available.
+```
+
+```
+// (CLIENT-SIDE) Username can be appended on the client side, if it is available.
 var complete_url = base_url + encodeURIComponent(username);
 // complete_url looks like this: https://risc.lastwall.com/risc/script/API_TOKEN/USER_ID
 ```
