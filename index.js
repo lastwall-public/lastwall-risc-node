@@ -86,7 +86,7 @@ RiscAccessor.prototype.getScriptUrl = function()
 	}
 
 	var protocol = this.use_https ? 'https' : 'http';
-	return protocol + '://' + this.host + ':' + this.port + '/risc/script/' + this.token;
+	return protocol + '://' + this.host + ':' + this.port + '/risc/script/' + this.token + '/';
 }
 
 

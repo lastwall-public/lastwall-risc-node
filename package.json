@@ -1,6 +1,6 @@
 {
   "name": "lastwall-risc-node",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Lastwall risk-based authentication module for Node.js",
   "main": "index.js",
   "repository": {
