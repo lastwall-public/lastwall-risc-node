@@ -4,9 +4,11 @@ Lastwall risk-based authentication module for Node.js
 
 ## Overview
 
+The Lastwall RISC platform allows your website to perform risk-based spot checks on a user's browsing session and verify his identity. You may perform RISC spot checks at any point during a user's browsing session. These spot checks will occur automatically and invisibly to your end users.
+
 This document provides pseudo-code to describe our Node.js integration module.
 
-Before reading this, please read our general [integratrion documentation](Integration.md).
+Before reading this document, please read our general [integratrion documentation](Integration.md).
 
 For bare-bones API documentation, please [click here](API.md).
 
