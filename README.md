@@ -57,7 +57,7 @@ var base_url = RiscAccessor.getScriptUrl();
 
 ```
 // (CLIENT-SIDE) Username can be appended on the client side, if it is available.
-var complete_url = base_url + encodeURIComponent(username);
+var complete_url = '<%= base_url %>' + encodeURIComponent(username);
 // complete_url looks like this: https://risc.lastwall.com/risc/script/API_TOKEN/USER_ID
 ```
 
