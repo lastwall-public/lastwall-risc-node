@@ -28,6 +28,23 @@ var RiscAccessor = require('lastwall-risc-node')(riscOptions);
 ```
 
 
+## Verify API Key
+
+Not really necessary, but good for peace of mind.
+
+```
+var onOk = function()
+{
+    console.log('API key verified!');
+}
+var onError = function(err)
+{
+    console.log('API key not verified: ' + err);
+}
+RiscAccessor.Verify(onOk, onError);
+```
+
+
 ## Get URL for RISC Script
 
 Our javascript requires both a public API token and a user ID in the URL. The specific format is `https://risc.lastwall.com/risc/script/API_TOKEN/USER_ID`. To construct this URL, we provide a convenient shortcut function in our Node module. You can do it like this:
@@ -49,8 +66,10 @@ NOTE: when you append the username to the URL, don't forget to URI-encode it!
 
 ## Decrypt Snapshot
 
+An encrypted snapshot is obtained by the client browser by running the asynchronous RISC javascript. This encrypted blob (which is just a string) must be passed to your server somehow (typically via hidden form submission). Only your server can decrypt it, using your API secret.
+
 ```
-// encr_snapshot is the Lastwall encrypted snapshot. It will typically submitted via a form
+// encr_snapshot is the Lastwall encrypted snapshot
 var result = RiscAccessor.decryptSnapshot(encr_snapshot);
 if (result)
 {
@@ -64,7 +83,7 @@ else
 ```
 
 
-## Validate Snapshot
+## Validate Snapshot (optional, recommended)
 
 The `validate` API call will compare your decrypted RISC snapshot result against the one saved in the Lastwall database. They should be identical. If they aren't, the only explanation is that a hacker has decrypted the result client-side, modified it, then re-encrypted it before sending it to your server. This is only possible if he has access to your API secret, or the computing power of an array of super computers stretching from here to Saturn.
 
