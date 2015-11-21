@@ -53,54 +53,54 @@ Some other example actions to take on risky or failed snapshots may be: email to
 Snippet from `login.ejs` to run the client-side javascript (**step 2**):
 
 ```
-    var initLastwallRisc = function()
-    {
-        // Get the username from the login form, and use it to construct the script URL.
-        var username = document.getElementById('usernametext').value;
-        // Pull the base RISC url from an EJS variable and append the username to get the full script URL.
-        var script_url = '<%= risc_url %>' + encodeURIComponent(username);
-        // The risc_url varible should look like this:   https://risc.lastwall.com/risc/script/API_TOKEN
-        // The final script url will look like this:     https://risc.lastwall.com/risc/script/API_TOKEN/USER_ID
-        loadRiscScript(script_url);
-    }
+var initLastwallRisc = function()
+{
+    // Get the username from the login form, and use it to construct the script URL.
+    var username = document.getElementById('usernametext').value;
+    // Pull the base RISC url from an EJS variable and append the username to get the full script URL.
+    var script_url = '<%= risc_url %>' + encodeURIComponent(username);
+    // The risc_url varible should look like this:   https://risc.lastwall.com/risc/script/API_TOKEN
+    // The final script url will look like this:     https://risc.lastwall.com/risc/script/API_TOKEN/USER_ID
+    loadRiscScript(script_url);
+}
 ```
 
 ```
-    var loadRiscScript = function(script_url)
-    {
-        var scr = document.createElement('script');
-        scr.setAttribute('async', 'true');
-        scr.type = 'text/javascript';
-        scr.src = script_url;
-        ((document.getElementsByTagName('head') || [null])[0] ||
-        document.getElementsByTagName('script')[0].parentNode).appendChild(scr);
-    }
+var loadRiscScript = function(script_url)
+{
+    var scr = document.createElement('script');
+    scr.setAttribute('async', 'true');
+    scr.type = 'text/javascript';
+    scr.src = script_url;
+    ((document.getElementsByTagName('head') || [null])[0] ||
+    document.getElementsByTagName('script')[0].parentNode).appendChild(scr);
+}
 ```
 
 Submit the hidden login form on RISC completion, also in `login.ejs` (**step 3**):
 
 ```
-    var lastwallRiscFinished = function(result)
-    {
-        // Copy the username and password from the user-typed login form to the hidden one
-        document.getElementById('username').value = document.getElementById('usernametext').value;
-        document.getElementById('password').value = document.getElementById('passwordtext').value;
-        // Include the encrypted RISC result, then submit the hidden form
-        document.getElementById('riscdata').value = result;
-        document.getElementById('hiddenform').submit();
-    }
+var lastwallRiscFinished = function(result)
+{
+    // Copy the username and password from the user-typed login form to the hidden one
+    document.getElementById('username').value = document.getElementById('usernametext').value;
+    document.getElementById('password').value = document.getElementById('passwordtext').value;
+    // Include the encrypted RISC result, then submit the hidden form
+    document.getElementById('riscdata').value = result;
+    document.getElementById('hiddenform').submit();
+}
 ```
 
 ```
-    <!-- EXAMPLE: original login form has its action changed to call Javascript:initLastwallRisc() -->
-    <form id="loginform" action="Javascript:initLastwallRisc()">
+<!-- EXAMPLE: original login form has its action changed to call Javascript:initLastwallRisc() -->
+<form id="loginform" action="Javascript:initLastwallRisc()">
 ...
-    <!-- new hidden login form calls the original POST to /login -->
-    <form id="hiddenform" action="/login" method="post">
-        <input type="hidden" id="username" name="username"/>
-        <input type="hidden" id="password" name="password"/>
-        <input type="hidden" id="riscdata" name="riscdata"/>
-    </form>
+<!-- new hidden login form calls the original POST to /login -->
+<form id="hiddenform" action="/login" method="post">
+    <input type="hidden" id="username" name="username"/>
+    <input type="hidden" id="password" name="password"/>
+    <input type="hidden" id="riscdata" name="riscdata"/>
+</form>
 ```
 
 
@@ -124,42 +124,42 @@ var RiscAccessor = require('lastwall-risc-node')(riscOptions);
 After a successful username/password check, the RISC snapshot is decrypted and evaluated before allowing the user to continue (**steps 4/5**):
 
 ```
-    // Run the basic passport authentication to validate the username/password. Then proceed to evaluate the RISC result via the function postLogin().
-    app.post('/login', passport.authenticate('local'), postLogin);
-    ...
-    var postLogin = function(req, res, next)
+// Run the basic passport authentication to validate the username/password. Then proceed to evaluate the RISC result via the function postLogin().
+app.post('/login', passport.authenticate('local'), postLogin);
+...
+var postLogin = function(req, res, next)
+{
+    var onError = function(msg)
     {
-        var onError = function(msg)
+        // Here, the snapshot has been modified somehow (this should be incredibly rare). Unless this is a 500 error, your API secret has been compromised!
+        // TODO: notify the site administrator that his API secret isn't safe! He must generate a new API key using the Lastwall RISC portal.
+        console.log('Error validating snapshot: ' + msg);
+        // Force a user logout if the snapshot has been illegally modified.
+        req.logout();
+        res.redirect('/login');
+    }
+    var onOk = function(result)
+    {
+        if (result.failed)
         {
-            // Here, the snapshot has been modified somehow (this should be incredibly rare). Unless this is a 500 error, your API secret has been compromised!
-            // TODO: notify the site administrator that his API secret isn't safe! He must generate a new API key using the Lastwall RISC portal.
-            console.log('Error validating snapshot: ' + msg);
-            // Force a user logout if the snapshot has been illegally modified.
+            // Here, the user has failed the RISC analysis. In this simple example, we will just automatically log him out.
+            // In a production environment, a better response might be to enforce a second-factor authentication or to make an internal note of the high-risk user.
+            console.log('Risc score: ' + result.score + '. Logging user out...');
             req.logout();
             res.redirect('/login');
         }
-        var onOk = function(result)
+        else if (result.risky || result.passed)
         {
-            if (result.failed)
-            {
-                // Here, the user has failed the RISC analysis. In this simple example, we will just automatically log him out.
-                // In a production environment, a better response might be to enforce a second-factor authentication or to make an internal note of the high-risk user.
-                console.log('Risc score: ' + result.score + '. Logging user out...');
-                req.logout();
-                res.redirect('/login');
-            }
-            else if (result.risky || result.passed)
-            {
-                // The user did not explicitly fail the RISC analysis (althought he may have been deemed 'risky'). In this example, we let him proceed to his account page.
-                console.log('Risc score: ' + result.score + '. User validated.');
-                res.redirect('/account');
-            }
+            // The user did not explicitly fail the RISC analysis (althought he may have been deemed 'risky'). In this example, we let him proceed to his account page.
+            console.log('Risc score: ' + result.score + '. User validated.');
+            res.redirect('/account');
         }
-        // Get the encrypted RISC snapshot from the submitted form (req.body.riscdata), and decrypt it.
-        var result = RiscAccessor.decryptSnapshot(req.body.riscdata);
-        // Call the RISC API /validate to ensure the snapshot is valid
-        RiscAccessor.validateSnapshot(result, onOk, onError);
     }
+    // Get the encrypted RISC snapshot from the submitted form (req.body.riscdata), and decrypt it.
+    var result = RiscAccessor.decryptSnapshot(req.body.riscdata);
+    // Call the RISC API /validate to ensure the snapshot is valid
+    RiscAccessor.validateSnapshot(result, onOk, onError);
+}
 ```
 
 
