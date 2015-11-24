@@ -4,7 +4,7 @@ Lastwall risk-based authentication API
 
 ## Overview
 
-This document describes the bare-bones API. For integration documentation, please [click here](Integration.md).
+This document describes the bare-bones API. For integration documentation, please [click here](Integration.md). For integration modules, please visit our public [Github page](https://github.com/lastwall-public).
 
 
 ## API Calls
