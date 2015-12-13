@@ -86,6 +86,7 @@ Validates a decrypted RISC score to ensure it hasn't been modified. This provide
 
 
 #### Required Parameters
+
 - **snapshot_id** - The unique snapshot ID
 - **browser_id** - The unique browser ID
 - **date** - The Javascript-formatted (ISO 8601) date/time of the session
@@ -101,7 +102,33 @@ Validates a decrypted RISC score to ensure it hasn't been modified. This provide
 
 ### Examples
 
-**Request:** `curl -X POST -H "(headers)" "https://risc.lastwall.com/api/validate" -d '{"snapshot_id":"(some guid)", "score":...}'"`    
+**Request:** `curl -X GET -H "(headers)" "https://risc.lastwall.com/api/validate" -d '{"snapshot_id":"(some guid)", "score":...}'"`    
+
+**Response:** `HTTP/1.1 200 OK`    `{ "status": "OK" }`
+
+---------------------------------------
+
+
+## POST - /authenticate
+
+The `authenticate` API call can be used when a user has a high RISC score on a particular browser, but you are certain it is the correct user. This API call will effectively set the RISC score back to 0% the next time the user does a RISC snapshot from that specific browser. This can be used in a variety of scenarios, the most common being after you have performed a successful second-factor authentication for that user, and you want his next RISC snapshot to be successful.
+
+
+#### Required Parameters
+
+- **browser_id** - The unique browser ID
+- **user_id** - The user to pre-authenticate
+
+
+#### Return Values
+
+- **status** - String 'OK' or 'Error'. If it's an error, the specific message is included in the 'error' return value.
+- **error** - Undefined or specific error message.
+
+
+### Examples
+
+**Request:** `curl -X POST -H "(headers)" "https://risc.lastwall.com/api/authenticate" -d '{"browser_id":"(some guid)", "user_id":"(some identifier)"}'"`    
 
 **Response:** `HTTP/1.1 200 OK`    `{ "status": "OK" }`
 
