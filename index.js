@@ -157,6 +157,29 @@ RiscAccessor.prototype.validateSnapshot = function(result, onOk, onError)
 }
 
 
+RiscAccessor.prototype.authenticateUser = function(user_id, browser_id, onOk, onError)
+{
+	if (!this.isInitialized)
+	{
+		this.output.error('Lastwall API Accessor has not been initialized!');
+		return;
+	}
+
+	if (!user_id)
+		onError('No user ID specified!');
+	else if (!browser_id)
+		onError('No browser ID specified!');
+	else
+	{
+		var params = {
+			user_id : user_id,
+			browser_id : browser_id
+		};
+		this.rest('api/authenticate', 'post', params, onOk, onError);
+	}
+}
+
+
 RiscAccessor.prototype.rest = function(functionName, method, reqParams, onOk, onError)
 {
 	var verbose = this.verbose;

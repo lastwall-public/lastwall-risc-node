@@ -23,6 +23,7 @@ The RISC snapshot result blob, when decryped, will result in a JSON-encoded stri
 
 - **snapshot_id** - The unique snapshot ID
 - **browser_id** - The unique ID for the user's web browser, as identified by the RISC server
+- **user_id** - The ID of the user that requested the snapshot
 - **date** - The exact time of the snapshot (Javascript-formatted ISO 8601 date string)
 - **score** - The resulting RISC score (percentage from 0-100 - lower is safer)
 - **status** - The snapshot status (string valued either 'passed', 'risky', or 'failed')
@@ -203,9 +204,9 @@ var decryptSnapshot = function(api_secret, riscstring)
 ```
 var verifySnapshot = function(snapshot)
 {
-    // Make sure the snapshot date is accurate within 10 minutes
-    var datediff = Math.abs(new Date(snapshot.date) - new Date()) / 1000;
-    if (datediff > 600)
+    // Make sure the snapshot date is within 10 minutes of the current time
+    var datediff = Math.abs(new Date(snapshot.date) - new Date()) / 1000;   // difference in milliseconds - div by 1000 to convert to seconds
+    if (datediff > 600)  // 600 seconds = 10 minutes
     {
         console.log('Result is too far out of date.');
         return null;

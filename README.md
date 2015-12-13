@@ -59,6 +59,7 @@ var base_url = RiscAccessor.getScriptUrl();
 // (CLIENT-SIDE) Username can be appended on the client side, if it is available.
 var complete_url = '<%= base_url %>' + encodeURIComponent(username);
 // complete_url looks like this: https://risc.lastwall.com/risc/script/API_TOKEN/USER_ID
+loadRiscScript(complete_url);
 ```
 
 NOTE: when you append the username to the URL, don't forget to URI-encode it!
@@ -126,4 +127,23 @@ if (result)
     }
     RiscAccessor.validateSnapshot(result, onOk, onError);
 }
+```
+
+
+## Pre-authenticate User for a Specific Browser (optional, use after a successful 2FA)
+
+The `authenticate` API call can be used when a user has a high RISC score on a particular browser, but you are certain it is the correct user. This API call will effectively set the RISC score back to 0% the next time the user does a RISC snapshot from that specific browser. This can be used in a variety of scenarios, the most common being after you have performed a successful second-factor authentication for that user, and you want his next RISC snapshot to be successful.
+
+You will need a valid user ID and browser ID to call this API function. The browser ID will be contained in the most recent RISC snapshot result.
+
+```
+var onOk = function()
+{
+    console.log('User is pre-authed. His next login will yield a 0% RISC score.');
+}
+var onError = function(err)
+{
+    console.log('Error pre-authing user: ' + err);
+}
+RiscAccessor.authenticateUser(user_id, browser_id, onOk, onError);
 ```
