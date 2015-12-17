@@ -157,7 +157,7 @@ RiscAccessor.prototype.validateSnapshot = function(result, onOk, onError)
 }
 
 
-RiscAccessor.prototype.authenticateUser = function(user_id, browser_id, onOk, onError)
+RiscAccessor.prototype.preAuthenticateUser = function(user_id, browser_id, onOk, onError)
 {
 	if (!this.isInitialized)
 	{
@@ -175,7 +175,7 @@ RiscAccessor.prototype.authenticateUser = function(user_id, browser_id, onOk, on
 			user_id : user_id,
 			browser_id : browser_id
 		};
-		this.rest('api/authenticate', 'post', params, onOk, onError);
+		this.rest('api/preauth', 'post', params, onOk, onError);
 	}
 }
 
