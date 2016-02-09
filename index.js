@@ -180,6 +180,31 @@ RiscAccessor.prototype.preAuthenticateUser = function(user_id, browser_id, onOk,
 }
 
 
+RiscAccessor.prototype.emailAuthenticateUser = function(user_id, browser_id, email, onOk, onError)
+{
+	if (!this.isInitialized)
+	{
+		this.output.error('Lastwall API Accessor has not been initialized!');
+		return;
+	}
+
+	if (!user_id)
+		onError('No user ID specified!');
+	else if (!browser_id)
+		onError('No browser ID specified!');
+	else
+	{
+		var params = {
+			user_id : user_id,
+			browser_id : browser_id
+		};
+		if (email && email != '')
+			params.email = email;
+		this.rest('api/save_email', 'post', params, onOk, onError);
+	}
+}
+
+
 RiscAccessor.prototype.rest = function(functionName, method, reqParams, onOk, onError)
 {
 	var verbose = this.verbose;

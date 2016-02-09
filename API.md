@@ -78,6 +78,11 @@ For all failed API calls (codes 400, 401, or 500), the result will be:
 
 
 
+# ![Lastwall Logo](logo.png) RISC API Calls
+
+Below are the API calls available for a standard RISC service.
+
+
 ---------------------------------------
 
 ## GET - /validate
@@ -111,7 +116,9 @@ Validates a decrypted RISC score to ensure it hasn't been modified. This provide
 
 ## POST - /preauth
 
-The `preauth` API call can be used when a user has a high RISC score on a particular browser, but you are certain it is the correct user. This API call will effectively set the RISC score back to 0% the next time the user does a RISC snapshot from that specific browser. This can be used in a variety of scenarios, the most common being after you have performed a successful second-factor authentication for that user, and you want his next RISC snapshot to be successful.
+The `preauth` API call can be used when a user has a high RISC score on a particular browser, but you are certain it is the correct user. This API call will effectively set the RISC score back to 0% the next time the user does a RISC snapshot from that specific browser. This can be used in a variety of scenarios, the most common being after you have performed your own successful second-factor authentication for that user, and you want his next RISC snapshot to be automatically validated.
+
+NOTE: if you do not want to build your own second factor authentication, you may choose to enable Lastwall SAVE (see below).
 
 
 #### Required Parameters
@@ -131,5 +138,48 @@ The `preauth` API call can be used when a user has a high RISC score on a partic
 **Request:** `curl -X POST -H "(headers)" "https://risc.lastwall.com/api/preauth" -d '{"browser_id":"(some guid)", "user_id":"(some identifier)"}'"`    
 
 **Response:** `HTTP/1.1 200 OK`    `{ "status": "OK" }`
+
+---------------------------------------
+
+
+
+# ![Lastwall Logo](logo.png) SAVE API Calls
+
+Below are the API calls available for a RISC service enhanced with the Lastwall Secondary Authentication and Verification Engine (SAVE).
+
+Lastwall SAVE includes a set of API calls allowing various second factor authentication options to unlock RISC user accounts.
+
+NOTE: Lastwall SAVE is an additional paid service. Please contact our team at Lastwall to enable it.
+
+
+## POST - /save_email
+
+The `save_email` API call can be used to force an email-based second factor authentication when a user has a high RISC score on a particular browser. The goal is to verify a user's identity by ensuring he has access to the specified email account. An email will be sent to the specified address with a one-time unlock link. If the user logs into his email and clicks the unlock link, his RISC score will be set back to 0% the next time he does a RISC snapshot from the specified browser. This API call is typically used after a risky or failed RISC snapshot has resulted in an account lockout, allowing the user a chance to regain account access from that browser.
+
+
+#### Required Parameters
+
+- **browser_id** - The unique browser ID
+- **user_id** - The user account to perform an email-based authentication
+
+
+#### Optional Parameters
+
+- **email** - The user's email address. If unspecified, we will try to use the email address stored in the RISC user account (if there is one).
+
+
+#### Return Values
+
+- **status** - String 'OK' or 'Error'. If it's an error, the specific message is included in the 'error' return value.
+- **error** - Undefined or specific error message.
+
+
+### Examples
+
+**Request:** `curl -X POST -H "(headers)" "https://risc.lastwall.com/api/save_email" -d '{"browser_id":"(some guid)", "user_id":"(some identifier)"}'"`    
+
+**Response:** `HTTP/1.1 200 OK`    `{ "status": "OK" }`
+
+**Alternate Response:** `HTTP/1.1 400 Bad Request`    `{ "status": "Error", "error": "User has no email address specified!" }`
 
 ---------------------------------------
